@@ -137,11 +137,11 @@ body{
 				}
 			}
 			.autocomplete-results {
-				  overflow: auto;
+				overflow: auto;
+				overflow-x: hidden;
+				  max-height: 300px;
 				position: absolute;
-			  	height: 120px;
 			  	width: 525px;
-			  	height: auto;
 			  	background: lightgray;
 			  	color: #050F19;
 			  	border-radius: 4px;
