@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Test Task</title>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+
+<script type="text/x-template" id="autocomplete">
+	<div>
+	<header class="header">
+		<div class="container">
+			<div class="header__location">
+				<img src="img/img1.png" class="header__location-img">
+				<p class="header__location-text">Волгоградская область</p>
+			</div>
+			<div class="header__navmenu">
+				<ul>
+					<li class="header__navmenu-item">
+						<a href="#">Тендеры</a>
+					</li>
+					<li class="header__navmenu-item">
+						<a href="#">База подрядчиков</a>
+					</li>
+					<li class="header__navmenu-item">
+						<a href="#">
+							<p>Другие сервисы</p>
+							<img src="img/img2.png" class="header__navmenu-item-img">
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</header>
+
+	<div class="search">
+		<div class="container">
+			<div class="search__logo">
+				<a href="#">
+					<img src="img/logo.png" class="search__logo-img">
+				</a>
+			</div>
+			<div class="search__catalog">
+				<div class="burger-btn">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+				<p class="search__catalog-text">Каталог</p>
+			</div>
+			<div class="autocomplete">
+				<div class="autocomplete__search">
+					<input class="search__input-input" type="text" name="" placeholder="Хочу найти..." id="before" 
+						   @input="onChange" v-model="search" @keyup.down="onArrowDown" @keyup.up="onArrowUp" @keyup.enter="onEnter">
+					<label for="before">&nbsp;</label>
+				</div>
+
+			    <ul id="autocomplete-results" v-show="isOpen" class="autocomplete-results">
+			      <li class="loading" v-if="isLoading">
+			        Loading results...
+			      </li>
+			      <li v-else v-for="(result, i) in results" :key="i" @click="setResult(result)" class="autocomplete-result" :class="{ 'is-active': i === arrowCounter }">
+			        {{ result }}
+			      </li>
+			    </ul>
+			</div>
+			<div class="search__list">
+				<div class="search__list-img">
+					<img src="img/img3.png" class="search__list-img">
+				</div>
+				<div class="search__list-circle">
+					
+				</div>
+				<p class="search__list-text">Список</p>
+			</div>
+			<div class="search__letter">
+				<p class="search__letter-letter">A</p>
+			</div>
+		</div>
+	</div>
+
+</div>
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+<!-- МАССИВ ДАННЫХ ДЛЯ АВТОКОМПЛИТА -->
+
+<div id="app">
+  <autocomplete :items="[ 'Асбест‎', 'Бетон‎', 'Битумы‎', 'Газобетон‎', 'Гидроизоляционные материалы‎', 'Глины‎', 'Дорожные покрытия‎', 'Древесные материалы‎', 'Кирпичи‎', 'Кровельные материалы', 'Облицовочные материалы‎', 'Огнеупоры‎', 'Отделочные материалы‎', 'Пенопласт', 'Песок‎', 'Пластмассы', 'Природный камень‎', 'Производители строительных материалов‎', 'Стекло‎', 'Строительные плиты‎']" />
+
+</div>
+
+<script type="text/javascript">
+	const Autocomplete = {
+  name: "autocomplete",
+  template: "#autocomplete",
+  props: {
+    items: {
+      type: Array,
+      required: false,
+      default: () => []
+    },
+    isAsync: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  },
+
+  data() {
+    return {
+      isOpen: false,
+      results: [],
+      search: "",
+      isLoading: false,
+      arrowCounter: 0
+    };
+  },
+
+  methods: {
+    onChange() {
+      this.$emit("input", this.search);
+
+      if (this.isAsync) {
+        this.isLoading = true;
+      } else {
+        this.filterResults();
+        this.isOpen = true;
+      }
+    },
+
+    filterResults() {
+      this.results = this.items.filter(item => {
+        return item.toLowerCase().indexOf(this.search.toLowerCase()) > -1;
+      });
+    },
+    setResult(result) {
+      this.search = result;
+      this.isOpen = false;
+    },
+    onArrowDown(evt) {
+      if (this.arrowCounter < this.results.length) {
+        this.arrowCounter = this.arrowCounter + 1;
+      }
+    },
+    onArrowUp() {
+      if (this.arrowCounter > 0) {
+        this.arrowCounter = this.arrowCounter - 1;
+      }
+    },
+    onEnter() {
+      this.search = this.results[this.arrowCounter];
+      this.isOpen = false;
+      this.arrowCounter = -1;
+    },
+    handleClickOutside(evt) {
+      if (!this.$el.contains(evt.target)) {
+        this.isOpen = false;
+        this.arrowCounter = -1;
+      }
+    }
+  },
+  watch: {
+    items: function(val, oldValue) {
+      if (val.length !== oldValue.length) {
+        this.results = val;
+        this.isLoading = false;
+      }
+    }
+  },
+  mounted() {
+    document.addEventListener("click", this.handleClickOutside);
+  },
+  destroyed() {
+    document.removeEventListener("click", this.handleClickOutside);
+  }
+};
+
+new Vue({
+  el: "#app",
+  name: "app",
+  components: {
+    autocomplete: Autocomplete
+  }
+});
+</script>
+
+
+
+</body>
+</html>
